@@ -1,0 +1,46 @@
+﻿<Window x:Class="annuaire.WPF.LoginAdmin"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:annuaire.WPF"
+        mc:Ignorable="d"
+        Title="Administration" Height="250" Width="400" WindowStartupLocation="CenterScreen" ResizeMode="NoResize">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition></RowDefinition>
+            <RowDefinition></RowDefinition>
+            <RowDefinition></RowDefinition>
+            <RowDefinition></RowDefinition>
+            <RowDefinition></RowDefinition>
+            <RowDefinition></RowDefinition>
+            <RowDefinition></RowDefinition>
+            <RowDefinition></RowDefinition>
+            <RowDefinition></RowDefinition>
+            <RowDefinition></RowDefinition>
+            <RowDefinition></RowDefinition>
+            <RowDefinition></RowDefinition>
+        </Grid.RowDefinitions>
+        <Label Content="Connectez-vous en tant qu'administrateur :" Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="12" Grid.RowSpan="2" FontSize="18" FontWeight="Bold"/>
+        <Label Content="Login :" Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="4" Grid.RowSpan="2" FontSize="15" FontWeight="Bold" FontStyle="Italic"></Label>
+        <TextBox x:Name="loginTxt" Text="" Grid.Column="4" Grid.Row="3" Grid.ColumnSpan="7" Grid.RowSpan="2" VerticalAlignment="Center" FontSize="15"></TextBox>
+        <Label Content="Mot de passe :" Grid.Column="0" Grid.Row="5" Grid.ColumnSpan="4" Grid.RowSpan="2" FontSize="15" FontWeight="Bold" FontStyle="Italic"></Label>
+        <TextBox x:Name="passwordTxt" Text="" Grid.Column="4" Grid.Row="5" Grid.ColumnSpan="7" Grid.RowSpan="2" VerticalAlignment="Center" FontSize="15"></TextBox>
+        <Button x:Name="loginButton" Content="Valider" Grid.Column="1" Grid.Row="8" Grid.ColumnSpan="4" Grid.RowSpan="2" FontSize="18" FontWeight="Bold" Click="loginButton_Click"></Button>
+        <Button x:Name="cancelButton" Content="Annuler" Grid.Column="6" Grid.Row="8" Grid.ColumnSpan="4" Grid.RowSpan="2" FontSize="18" FontWeight="Bold" Click="cancelButton_Click"></Button>
+    </Grid>
+</Window>
