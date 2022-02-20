@@ -57,10 +57,14 @@ C:\Users\2217873\Documents\CESI\cubeAnnuaire\annuaire.WPF\bin\Debug\net5.0-windo
 C:\Users\2217873\Documents\CESI\cubeAnnuaire\annuaire.WPF\bin\Debug\net5.0-windows\annuaire.Core.Employees.Infrastructures.pdb
 C:\Users\2217873\Documents\CESI\cubeAnnuaire\annuaire.WPF\bin\Debug\net5.0-windows\annuaire.Core.Framework.pdb
 C:\Users\2217873\Documents\CESI\cubeAnnuaire\annuaire.WPF\obj\Debug\net5.0-windows\annuaire.WPF.csproj.AssemblyReference.cache
+C:\Users\2217873\Documents\CESI\cubeAnnuaire\annuaire.WPF\obj\Debug\net5.0-windows\LoginAdmin.g.cs
+C:\Users\2217873\Documents\CESI\cubeAnnuaire\annuaire.WPF\obj\Debug\net5.0-windows\MainWindow.g.cs
 C:\Users\2217873\Documents\CESI\cubeAnnuaire\annuaire.WPF\obj\Debug\net5.0-windows\App.g.cs
 C:\Users\2217873\Documents\CESI\cubeAnnuaire\annuaire.WPF\obj\Debug\net5.0-windows\annuaire.WPF_Content.g.cs
 C:\Users\2217873\Documents\CESI\cubeAnnuaire\annuaire.WPF\obj\Debug\net5.0-windows\annuaire.WPF_MarkupCompile.cache
 C:\Users\2217873\Documents\CESI\cubeAnnuaire\annuaire.WPF\obj\Debug\net5.0-windows\annuaire.WPF_MarkupCompile.lref
+C:\Users\2217873\Documents\CESI\cubeAnnuaire\annuaire.WPF\obj\Debug\net5.0-windows\LoginAdmin.baml
+C:\Users\2217873\Documents\CESI\cubeAnnuaire\annuaire.WPF\obj\Debug\net5.0-windows\MainWindow.baml
 C:\Users\2217873\Documents\CESI\cubeAnnuaire\annuaire.WPF\obj\Debug\net5.0-windows\annuaire.WPF.g.resources
 C:\Users\2217873\Documents\CESI\cubeAnnuaire\annuaire.WPF\obj\Debug\net5.0-windows\annuaire.WPF.GeneratedMSBuildEditorConfig.editorconfig
 C:\Users\2217873\Documents\CESI\cubeAnnuaire\annuaire.WPF\obj\Debug\net5.0-windows\annuaire.WPF.AssemblyInfoInputs.cache
@@ -70,7 +74,3 @@ C:\Users\2217873\Documents\CESI\cubeAnnuaire\annuaire.WPF\obj\Debug\net5.0-windo
 C:\Users\2217873\Documents\CESI\cubeAnnuaire\annuaire.WPF\obj\Debug\net5.0-windows\ref\annuaire.WPF.dll
 C:\Users\2217873\Documents\CESI\cubeAnnuaire\annuaire.WPF\obj\Debug\net5.0-windows\annuaire.WPF.pdb
 C:\Users\2217873\Documents\CESI\cubeAnnuaire\annuaire.WPF\obj\Debug\net5.0-windows\annuaire.WPF.genruntimeconfig.cache
-C:\Users\2217873\Documents\CESI\cubeAnnuaire\annuaire.WPF\obj\Debug\net5.0-windows\LoginAdmin.g.cs
-C:\Users\2217873\Documents\CESI\cubeAnnuaire\annuaire.WPF\obj\Debug\net5.0-windows\MainWindow.g.cs
-C:\Users\2217873\Documents\CESI\cubeAnnuaire\annuaire.WPF\obj\Debug\net5.0-windows\LoginAdmin.baml
-C:\Users\2217873\Documents\CESI\cubeAnnuaire\annuaire.WPF\obj\Debug\net5.0-windows\MainWindow.baml

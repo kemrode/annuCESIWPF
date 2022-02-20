@@ -1,4 +1,5 @@
-﻿using annuaire.WPF.Models;
+﻿using annuaire.WPF.Controllers;
+using annuaire.WPF.Models;
 using Newtonsoft.Json;
 using RestSharp;
 using System;
@@ -33,6 +34,11 @@ namespace annuaire.WPF
         private List<Key> KonamiSequence = new List<Key> { Key.Up, Key.Up, Key.Down, Key.Down, Key.Left, Key.Right, Key.Left, Key.Right, Key.B, Key.A};
         private List<Key> readSequence = new List<Key>();
         private int keyPosition = 0;
+        private EmployeeController _employeeController = new EmployeeController();
+        private JobController _jobController = new JobController();
+        private PlaceController _placeController = new PlaceController();
+        private SearchController _searchController = new SearchController();
+        private ErrorController _message = new ErrorController();
         #endregion
 
         #region Constructor
@@ -40,8 +46,8 @@ namespace annuaire.WPF
         {
             InitializeComponent();
             GetAllEmployee();
-            GetPlaces();
-            GetJobs();
+            _placeList = _placeController.GetAllPlaces().GetAwaiter().GetResult();
+            _jobList = _jobController.GetAllJobs().GetAwaiter().GetResult();
             GetItems();
             bool checkAdmin = CheckIsAdmin();
             if (checkAdmin == false)
@@ -56,40 +62,13 @@ namespace annuaire.WPF
 
         #region Privates Methods
 
-        #region GetAllEmployee
-        private void GetPlaces()
+        public void GetAllEmployee()
         {
-            GetAllPlaces().GetAwaiter().GetResult();
-        }
-        private void GetAllEmployee()
-        {
-            GetAll().GetAwaiter().GetResult();
+            allEmployee = _employeeController.GetAll().GetAwaiter().GetResult();
             DrawStackpanel();
         }
-        private async Task GetAll()
-        {
-            try
-            {
-                var client = new RestClient(ConfigurationManager.ConnectionStrings["AnnuaireAPI"].ConnectionString);
-                var request = new RestRequest("Employee/", Method.Get);
-                var response = client.ExecuteAsync(request);
-                var result = response.GetAwaiter().GetResult();
 
-                if (response.Result.StatusCode == System.Net.HttpStatusCode.OK)
-                {
-                    allEmployee = new List<Employee>();
-                    allEmployee = JsonConvert.DeserializeObject<List<Employee>>(result.Content);
-                }
-                else
-                {
-                    Console.WriteLine("error");
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
-        }
+        #region Visual Elements
         private void DrawStackpanel()
         {
             foreach (Employee employee in allEmployee)
@@ -131,14 +110,150 @@ namespace annuaire.WPF
             newLabel.FontWeight = FontWeights.Bold;
             return newLabel;
         }
+        private void CreateListOfItems(ComboBox _comboBox)
+        {
+            foreach (Place item in _placeList)
+            {
+                ComboBoxItem newItem = new ComboBoxItem();
+                newItem.Content = item.PlaceName;
+                _comboBox.Items.Add(newItem);
+            }
+        }
+        private void GetItems()
+        {
+            CreateListOfItems(placeList);
+            CreateListOfItems(placeDeleting);
+            CreateListOfItems(SiteBox);
+            JobItems(jobDeleting);
+            JobItems(jobBox);
+        }
+        private void JobItems(ComboBox _comboBox)
+        {
+            if (_jobList.Count == 0)
+            {
+                ComboBoxItem newItem = new ComboBoxItem();
+                newItem.Content = "Aucun service enregistré";
+                _comboBox.Items.Add(newItem);
+
+            }
+            else
+            {
+                foreach (Job item in _jobList)
+                {
+                    ComboBoxItem newItem = new ComboBoxItem();
+                    newItem.Content = item.JobName;
+                    _comboBox.Items.Add(newItem);
+                }
+            }
+        }
         #endregion
 
-        #region ButtonClick_AddNewEmployee
+        #region Buttons Events
+        private void deleteButton_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show($"Voulez-vous supprimer {_employeeToSee.Name} ?", "suppression", MessageBoxButton.YesNo, MessageBoxImage.Stop);
+            _employeeController.DeleteEmployee(_employeeToSee).GetAwaiter().GetResult();
+            GetAllPanel.Children.RemoveRange(0, allEmployee.Count());
+            GetAllEmployee();
+        }
+        private void updateButton_Click(object sender, RoutedEventArgs e)
+        {
+            var employeeChanged = NewEmployee();
+            _employeeController.UpdateEmployee(employeeChanged, _employeeToSee).GetAwaiter().GetResult();
+            GetAllPanel.Children.RemoveRange(0, allEmployee.Count());
+            GetAllEmployee();
+        }
+        private void newJobBtn_Click(object sender, RoutedEventArgs e)
+        {
+            Job _newJob = new Job()
+            {
+                JobName = newJob.Text,
+            };
+            bool isInDataBase = CheckIfJobAlreadyInDataBase(_newJob);
+            if (isInDataBase)
+            {
+                newJob.Clear();
+                _message.ShowErrorMessage("Donnée déjà enregistrée");
+            }
+            else
+            {
+                jobDeleting.Items.Clear();
+                jobBox.Items.Clear();
+                _jobController.AddJob(_newJob).GetAwaiter().GetResult();
+                _jobList = _jobController.GetAllJobs().GetAwaiter().GetResult();
+                JobItems(jobDeleting);
+                JobItems(jobBox);
+                newJob.Clear();
+            }
+        }
+        private void deleteJobBtn_Click(object sender, RoutedEventArgs e)
+        {
+            ComboBoxItem job = (ComboBoxItem)jobDeleting.SelectedValue;
+            string jobToDelete = job.Content.ToString();
+            bool isCountZero = CheckIfJobAtzero(jobToDelete);
+            if (jobToDelete != null && isCountZero == true)
+            {
+                jobDeleting.Items.Clear();
+                jobBox.Items.Clear();
+                _jobController.DeleteJob(jobToDelete).GetAwaiter().GetResult();
+                _jobList = _jobController.GetAllJobs().GetAwaiter().GetResult();
+                JobItems(jobDeleting);
+                JobItems(jobBox);
+            }
+            else
+            {
+                _message.ShowErrorMessage("Désolé, vous ne pouvez pas effectuer cette action");
+            }
+        }
+        private void newSiteBtn_Click(object sender, RoutedEventArgs e)
+        {
+            Place newPlace = new Place()
+            {
+                PlaceName = newSite.Text,
+            };
+            bool checkedDatBase = CheckIfAlreadyInDataBase(newPlace);
+            if (checkedDatBase)
+            {
+                newSite.Clear();
+                _message.ShowErrorMessage("Donnée déjà existante");
+            }
+            else
+            {
+                _placeList.Clear();
+                newSite.Clear();
+                _placeController.AddPlace(newPlace).GetAwaiter().GetResult();
+                _placeList = _placeController.GetAllPlaces().GetAwaiter().GetResult();
+                CreateListOfItems(placeList);
+                CreateListOfItems(placeDeleting);
+            }
+        }
+        private void deleteSiteBtn_Click(object sender, RoutedEventArgs e)
+        {
+            ComboBoxItem place = (ComboBoxItem)placeDeleting.SelectedItem;
+            string placeToDelete = place.Content.ToString();
+            bool isCountZero = CheckIfCountZero(placeToDelete);
+            if (placeToDelete != "Tous les sites" && isCountZero == true)
+            {
+                _placeList.Clear();
+                _placeController.Deleteplace(placeToDelete).GetAwaiter().GetResult();
+                _placeList = _placeController.GetAllPlaces().GetAwaiter().GetResult();
+                CreateListOfItems(placeList);
+                CreateListOfItems(placeDeleting);
+            }
+            else
+            {
+                _message.ShowErrorMessage("Désolé, vous ne pouvez pas effectuer cette action");
+            }
+        }
+        #endregion
+
+        #region AddNewEmployee
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             Employee newEmployee = NewEmployee();
             GetAllPanel.Children.RemoveRange(0, allEmployee.Count());
-            Task task = AddNewEmployee(newEmployee);
+            _employeeController.AddNewEmployee(newEmployee).GetAwaiter().GetResult();
+            GetAllEmployee();
         }
         private Employee NewEmployee()
         {
@@ -157,64 +272,6 @@ namespace annuaire.WPF
             };
             return newEmployee;
         }
-        private async Task AddNewEmployee(Employee employee)
-        {
-            try
-            {
-                var client = new RestClient(ConfigurationManager.ConnectionStrings["AnnuaireAPI"].ConnectionString);
-                var request = new RestRequest("Employee", Method.Post);
-                request.RequestFormat = RestSharp.DataFormat.Json;
-                request.AddJsonBody(employee);
-                var response =
-                    await client.ExecuteAsync(request);
-                if (response.IsSuccessful)
-                {
-                    Employee newEmployeeAdded = JsonConvert.DeserializeObject<Employee>(response.Content);
-                    MessageBox.Show("Nouvel employé enregistré", "Enregistrement", MessageBoxButton.OK, MessageBoxImage.Exclamation);
-                    GetAllEmployee();
-                } else
-                {
-                    Console.WriteLine(response.StatusCode);
-                }
-
-            } catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
-        }
-        #endregion
-
-        #region ButtonClick_DeleteEmployee
-        private void deleteButton_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show($"Voulez-vous supprimer {_employeeToSee.Name} ?", "suppression", MessageBoxButton.YesNo, MessageBoxImage.Stop);
-            Task task = DeleteEmployee(_employeeToSee);
-        }
-        private async Task DeleteEmployee(Employee employee)
-        {
-            try
-            {
-                var client = new RestClient(ConfigurationManager.ConnectionStrings["AnnuaireAPI"].ConnectionString);
-                var request = new RestRequest($"Employee/{employee.Id}", Method.Delete);
-                var response =
-                    await client.ExecuteAsync(request);
-                if (response.IsSuccessful)
-                {
-                    MessageBox.Show($"L'employé {employee.Name} supprimé", "suppression", MessageBoxButton.OK, MessageBoxImage.Exclamation);
-                    GetAllPanel.Children.RemoveRange(0, allEmployee.Count());
-                    GetAllEmployee();
-                } else
-                {
-                    Console.WriteLine(response.StatusCode);
-                    MessageBox.Show($"L'utilisateur {employee.Name} n'a pas pu être supprimé", "suppression", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            } catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
-
-        }
-
         #endregion
 
         #region ComboBox
@@ -226,71 +283,13 @@ namespace annuaire.WPF
             if (placeName != "Tous les sites")
             {
                 GetAllPanel.Children.RemoveRange(0, allEmployee.Count());
-                GetByPlace(placeName).GetAwaiter().GetResult();
+                allEmployee = _placeController.GetByPlace(placeName).GetAwaiter().GetResult();
                 DrawStackpanel();
             } else
             {
                 GetAllPanel.Children.RemoveRange(0, allEmployee.Count());
                 GetAllEmployee();
                 DrawStackpanel();
-            }
-        }
-        private void CreateListOfItems(ComboBox _comboBox)
-        {
-            foreach(Place item in _placeList)
-            {
-                ComboBoxItem newItem = new ComboBoxItem();
-                newItem.Content = item.PlaceName;
-                _comboBox.Items.Add(newItem);
-            }
-        }
-        private void ClearComboxes()
-        {
-            placeList.Items.Clear();
-            placeDeleting.Items.Clear();
-            SiteBox.Items.Clear();
-        }
-        private void GetItems()
-        {
-            CreateListOfItems(placeList);
-            CreateListOfItems(placeDeleting);
-            CreateListOfItems(SiteBox);
-            JobItems(jobDeleting);
-            JobItems(jobBox);
-        }
-        #endregion
-
-        #region Update Method
-        private void updateButton_Click(object sender, RoutedEventArgs e)
-        {
-            var employeeChanged = NewEmployee();
-            UpdateEmployee(employeeChanged).GetAwaiter().GetResult();
-            GetAllPanel.Children.RemoveRange(0, allEmployee.Count());
-            GetAllEmployee();
-        }
-
-        private async Task UpdateEmployee(Employee employeeUpdate)
-        {
-            try
-            {
-                var client = new RestClient(ConfigurationManager.ConnectionStrings["AnnuaireAPI"].ConnectionString);
-                var request = new RestRequest($"Employee/{_employeeToSee.Id}", Method.Put);
-                request.RequestFormat = RestSharp.DataFormat.Json;
-                request.AddJsonBody(employeeUpdate);
-                var response = client.ExecuteAsync(request);
-                var result = response.GetAwaiter().GetResult();
-                if (response.Result.StatusCode == System.Net.HttpStatusCode.OK)
-                {
-                    MessageBox.Show("Modifications effectuées", "Modifications", MessageBoxButton.OK, MessageBoxImage.Information);
-                } else
-                {
-                    Console.WriteLine(response.Result.StatusCode);
-                    MessageBox.Show("Erreur modifications impossibles", "Modifications", MessageBoxButton.OK, MessageBoxImage.Error);
-
-                }
-            } catch (Exception e)
-            {
-                MessageBox.Show("Erreur modifications impossibles", "Modifications", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
         #endregion
@@ -377,7 +376,6 @@ namespace annuaire.WPF
         #endregion
 
         #region Search Methods
-
         private void searchBar_KeyDown(object sender, KeyEventArgs e)
         {
             if(e.Key == Key.Enter)
@@ -387,104 +385,13 @@ namespace annuaire.WPF
                     nameToFind != "")
                 {
                     GetAllPanel.Children.RemoveRange(0, allEmployee.Count());
-                    Task task = SearchByName(nameToFind);
+                    allEmployee = _searchController.SearchByName(nameToFind).GetAwaiter().GetResult();
                     DrawStackpanel();
                 } else
                 {
                     GetAllPanel.Children.RemoveRange(0, allEmployee.Count());
                     GetAllEmployee();
                 }
-            }
-
-        }
-        private async Task SearchByName(string Name)
-        {
-            try
-            {
-                var client = new RestClient(ConfigurationManager.ConnectionStrings["AnnuaireAPI"].ConnectionString);
-                var request = new RestRequest($"Employee/name/{Name}", Method.Get);
-                var response = 
-                    await client.ExecuteAsync(request);
-                if (response.IsSuccessful)
-                {
-                    allEmployee = JsonConvert.DeserializeObject<List<Employee>>(response.Content).ToList();
-                }
-                else
-                {
-                    Task task = SearchByFirstname(Name);
-                }
-
-            } catch (Exception e)
-            {
-                ShowErrorMessage(e.Message.ToString());
-            }
-
-        }
-        private async Task SearchByFirstname(string Firstname)
-        {
-            try
-            {
-                var client = new RestClient(ConfigurationManager.ConnectionStrings["AnnuaireAPI"].ConnectionString);
-                var request = new RestRequest($"Employee/firstname/{Firstname}", Method.Get);
-                var response =
-                    await client.ExecuteAsync(request);
-                if (response.IsSuccessful)
-                {
-                    allEmployee = JsonConvert.DeserializeObject<List<Employee>>(response.Content);
-                }
-                else
-                {
-                    Task task = SearchByMail(Firstname);
-                }
-            } catch (Exception e)
-            {
-                ShowErrorMessage(e.Message.ToString());
-            }
-        }
-        private async Task SearchByMail(string Mail)
-        {
-            try
-            {
-                var client = new RestClient(ConfigurationManager.ConnectionStrings["AnnuaireAPI"].ConnectionString);
-                var request = new RestRequest($"Employee/mail/{Mail}", Method.Get);
-                var response = 
-                    await client.ExecuteAsync(request);
-                if (response.IsSuccessful)
-                {
-                    Employee employeeFind = JsonConvert.DeserializeObject<Employee>(response.Content);
-                    allEmployee = new List<Employee>();
-                    allEmployee.Add(employeeFind);
-                    DrawTextBox(employeeFind);
-                }
-                else
-                {
-                    Task task = SearchJobByName(Mail);
-                }
-            } catch (Exception e)
-            {
-                ShowErrorMessage(e.Message.ToString());
-            }
-        }
-        private async Task SearchByPhoneNumber(string Phone)
-        {
-            try
-            {
-                var client = new RestClient(ConfigurationManager.ConnectionStrings["AnnuaireAPI"].ConnectionString);
-                var request = new RestRequest($"Employee/phone/{Phone}", Method.Get);
-                var response = 
-                    await client.ExecuteAsync(request);
-                if (response.IsSuccessful)
-                {
-                    allEmployee = JsonConvert.DeserializeObject<List<Employee>>(response.Content);
-                }
-                else
-                {
-                    ShowErrorMessage("Désolé, votre recherche n'a pu aboutir");
-                    GetAllPanel.Children.RemoveRange(0, allEmployee.Count());
-                }
-            } catch(Exception e)
-            {
-                ShowErrorMessage(e.Message);
             }
         }
         #endregion
@@ -538,134 +445,7 @@ namespace annuaire.WPF
         }
         #endregion
 
-        #region ComboBox Places & Jobs Methods
-
-        #region Places Methods
-        private async Task GetByPlace(string placeName)
-        {
-            try
-            {
-                var client = new RestClient(ConfigurationManager.ConnectionStrings["AnnuaireAPI"].ConnectionString);
-                var request = new RestRequest($"Employee/{placeName}", Method.Get);
-                var response = client.ExecuteAsync(request);
-                var result = response.GetAwaiter().GetResult();
-                if (response.Result.StatusCode == System.Net.HttpStatusCode.OK)
-                {
-                    allEmployee = JsonConvert.DeserializeObject<List<Employee>>(result.Content);
-                }
-                else
-                {
-                    ShowErrorMessage("Erreur lors de la récupération des données");
-                    GetAllPanel.Children.RemoveRange(0, allEmployee.Count());
-                }
-            } catch (Exception e)
-            {
-                ShowErrorMessage(e.Message);
-            }
-        }
-        private async Task GetAllPlaces()
-        {
-            try
-            {
-                var client = new RestClient(ConfigurationManager.ConnectionStrings["AnnuaireAPI"].ConnectionString);
-                var request = new RestRequest("Place/", Method.Get);
-                var response = client.ExecuteAsync(request);
-                var result = response.GetAwaiter().GetResult();
-                if (response.Result.StatusCode == System.Net.HttpStatusCode.OK)
-                {
-                    _placeList = new List<Place>();         
-                    _placeList = JsonConvert.DeserializeObject<List<Place>>(result.Content);
-                } else
-                {
-                    ShowErrorMessage("Erreur lors de la récupération des sites");
-                }
-            } catch (Exception e)
-            {
-                ShowErrorMessage(e.Message);
-            }
-
-        }
-        private void newSiteBtn_Click(object sender, RoutedEventArgs e)
-        {
-            Place newPlace = new Place()
-            {
-                PlaceName = newSite.Text,
-            };
-            bool checkedDatBase = CheckIfAlreadyInDataBase(newPlace);
-            if (checkedDatBase)
-            {
-                newSite.Clear();
-                ShowErrorMessage("Donnée déjà existante");
-            } else
-            {
-                ClearComboxes();
-                Task task = AddPlace(newPlace);
-            }
-        }
-        private async Task AddPlace(Place newPlace)
-        {
-            try
-            {
-                var client = new RestClient(ConfigurationManager.ConnectionStrings["AnnuaireAPI"].ConnectionString);
-                var request = new RestRequest("Place", Method.Post);
-                request.RequestFormat = RestSharp.DataFormat.Json;
-                request.AddJsonBody(newPlace);
-                var response =
-                    await client.ExecuteAsync(request);
-                if (response.IsSuccessful)
-                {
-                    Place newPlaceAdded = JsonConvert.DeserializeObject<Place>(response.Content);
-                    MessageBox.Show("nouveau site ajouté", "Ajout", MessageBoxButton.OK, MessageBoxImage.Exclamation);
-                    newSite.Clear();
-                    GetAllPlaces().GetAwaiter().GetResult();
-                    GetItems();
-                } else
-                {
-                    MessageBox.Show("Erreur lors de l'ajout du site", "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
-        }
-        private void deleteSiteBtn_Click(object sender, RoutedEventArgs e)
-        {
-            ComboBoxItem place = (ComboBoxItem)placeDeleting.SelectedItem;
-            string placeToDelete = place.Content.ToString();
-            bool isCountZero = CheckIfCountZero(placeToDelete);
-            if(placeToDelete != "Tous les sites" && isCountZero == true)
-            {
-                ClearComboxes();
-                Task task = Deleteplace(placeToDelete);
-            } else
-            {
-                ShowErrorMessage("Désolé, vous ne pouvez pas effectuer cette action");
-            }
-        }
-        private async Task Deleteplace(string placeToDelete)
-        {
-            try
-            {
-                var client = new RestClient(ConfigurationManager.ConnectionStrings["AnnuaireAPI"].ConnectionString);
-                var request = new RestRequest($"Place/place/{placeToDelete}", Method.Delete);
-                var response =
-                    await client.ExecuteAsync(request);
-                if (response.IsSuccessful)
-                {
-                    ShowSuccessMessage($"Le site {placeToDelete} a bien été supprimé");
-                    GetAllPlaces().GetAwaiter().GetResult();
-                    GetItems();
-                } else
-                {
-                    ShowErrorMessage("Erreur lors de la suppression du site");
-                }
-
-            } catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
-        }
+        #region Checks
         private bool CheckIfAlreadyInDataBase(Place newPlace)
         {
             foreach (Place place in _placeList)
@@ -679,188 +459,13 @@ namespace annuaire.WPF
         }
         private bool CheckIfCountZero(string placeName)
         {
-            GetByPlace(placeName).GetAwaiter().GetResult();
-            if(allEmployee.Count == 0)
+            GetAllPanel.Children.RemoveRange(0, allEmployee.Count());
+            allEmployee = _placeController.GetByPlace(placeName).GetAwaiter().GetResult();
+            if (allEmployee.Count == 0)
             {
                 return true;
             }
             return false;
-        }
-        #endregion
-
-        #region Jobs Methods
-        private void GetJobs()
-        {
-            GetAllJobs().GetAwaiter().GetResult();
-        }
-        private async Task GetAllJobs()
-        {
-            try
-            {
-                var client = new RestClient(ConfigurationManager.ConnectionStrings["AnnuaireAPI"].ConnectionString);
-                var request = new RestRequest("Job", Method.Get);
-                var response = client.ExecuteAsync(request);
-                var result = response.GetAwaiter().GetResult();
-                if (response.Result.StatusCode == System.Net.HttpStatusCode.OK)
-                {
-                    _jobList = new List<Job>();
-                    _jobList = JsonConvert.DeserializeObject<List<Job>>(result.Content);
-                } else
-                {
-                    ShowErrorMessage("Erreur lors de la récupération des données");
-                }
-            } catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-                ShowErrorMessage(e.Message.ToString());
-            }
-        }
-        private void JobItems(ComboBox _comboBox)
-        {
-            if(_jobList.Count == 0)
-            {
-                ComboBoxItem newItem = new ComboBoxItem();
-                newItem.Content = "Aucun service enregistré";
-                _comboBox.Items.Add(newItem);
-                    
-            } else
-            {
-                foreach (Job item in _jobList)
-                {
-                    ComboBoxItem newItem = new ComboBoxItem();
-                    newItem.Content = item.JobName;
-                    _comboBox.Items.Add(newItem);
-                }
-            }
-        }
-        private async Task SearchJobByName(string jobName)
-        {
-            try
-            {
-                var client = new RestClient(ConfigurationManager.ConnectionStrings["AnnuaireAPI"].ConnectionString);
-                var request = new RestRequest($"Employee/job/{jobName}", Method.Get);
-                var response =
-                    await client.ExecuteAsync(request);
-                if (response.IsSuccessful)
-                {
-                    allEmployee = JsonConvert.DeserializeObject<List<Employee>>(response.Content);
-                }else
-                {
-                    Task task = SearchByPhoneNumber(jobName);
-                }
-
-            }catch(Exception e)
-            {
-                ShowErrorMessage(e.Message);
-            }
-        }
-        private async Task GetByJobNameEmployees(string jobName)
-        {
-            try
-            {
-                var client = new RestClient(ConfigurationManager.ConnectionStrings["AnnuaireAPI"].ConnectionString);
-                var request = new RestRequest($"Employee/job/{jobName}", Method.Get);
-                var response  = client.ExecuteAsync(request);
-                var result = response.GetAwaiter().GetResult();
-                if (response.Result.StatusCode == System.Net.HttpStatusCode.OK)
-                {
-                    allEmployee = JsonConvert.DeserializeObject<List<Employee>>(result.Content);
-                }
-                else
-                {
-                    allEmployee = new List<Employee>();
-                }
-
-            }
-            catch (Exception e)
-            {
-                ShowErrorMessage(e.Message);
-            }
-        }
-        private void newJobBtn_Click(object sender, RoutedEventArgs e)
-        {
-            Job _newJob = new Job()
-            {
-                JobName = newJob.Text,
-            };
-            bool isInDataBase = CheckIfJobAlreadyInDataBase(_newJob);
-            if (isInDataBase)
-            {
-                newJob.Clear();
-                ShowErrorMessage("Donnée déjà enregistrée");
-            } else
-            {
-                jobDeleting.Items.Clear();
-                Task task = AddJob(_newJob);
-            }
-        }
-        private async Task AddJob(Job _newJob)
-        {
-            try
-            {
-                var client = new RestClient(ConfigurationManager.ConnectionStrings["AnnuaireAPI"].ConnectionString);
-                var request = new RestRequest("Job", Method.Post);
-                request.RequestFormat = RestSharp.DataFormat.Json;
-                request.AddJsonBody(_newJob);
-                var response =
-                    await client.ExecuteAsync(request);
-                if (response.IsSuccessful)
-                {
-                    Job jobAdded = JsonConvert.DeserializeObject<Job>(response.Content);
-                    jobDeleting.Items.Clear();
-                    jobBox.Items.Clear();
-                    GetJobs();
-                    JobItems(jobDeleting);
-                    JobItems(jobBox);
-                    ShowSuccessMessage("Enregistrement d'un nouveau service effectué");
-                    newJob.Clear();
-                } else
-                {
-                    ShowErrorMessage("Erreur lors de l'enregistrement de la donnée");
-                }
-            } catch (Exception e)
-            {
-                ShowErrorMessage(e.Message.ToString());
-            }
-        }
-        private void deleteJobBtn_Click(object sender, RoutedEventArgs e)
-        {
-            ComboBoxItem job = (ComboBoxItem)jobDeleting.SelectedValue;
-            string jobToDelete = job.Content.ToString();
-            bool isCountZero = CheckIfJobAtzero(jobToDelete);
-            if(jobToDelete != null && isCountZero == true)
-            {
-                jobDeleting.Items.Clear();
-                jobBox.Items.Clear();
-                Task task = DeleteJob(jobToDelete);
-            } else
-            {
-                ShowErrorMessage("Désolé, vous ne pouvez pas effectuer cette action");
-            }
-        }
-        private async Task DeleteJob(string jobToDelete)
-        {
-            try
-            {
-                var client = new RestClient(ConfigurationManager.ConnectionStrings["AnnuaireAPI"].ConnectionString);
-                var request = new RestRequest($"Job/job/{jobToDelete}", Method.Delete);
-                var response =
-                    await client.ExecuteAsync(request);
-                if (response.IsSuccessful)
-                {
-                    ShowSuccessMessage($"le service {jobToDelete} a bien été supprimé");
-                    GetJobs();
-                    JobItems(jobDeleting);
-                    JobItems(jobBox);
-                } else
-                {
-                    ShowErrorMessage("Erreur lors de la suppression de la donnée");
-                }
-
-            } catch (Exception e)
-            {
-                ShowErrorMessage(e.Message.ToString());
-            }
         }
         private bool CheckIfJobAlreadyInDataBase(Job jobName)
         {
@@ -875,7 +480,7 @@ namespace annuaire.WPF
         }
         private bool CheckIfJobAtzero(string jobName)
         {
-            GetByJobNameEmployees(jobName).GetAwaiter().GetResult();
+            allEmployee = _jobController.GetByJobNameEmployees(jobName).GetAwaiter().GetResult();
             if (allEmployee.Count == 0)
             {
                 return true;
@@ -885,24 +490,5 @@ namespace annuaire.WPF
         #endregion
 
         #endregion
-
-        private void DrawTextBox(Employee employee)
-        {
-            NameBox.Text = employee.Name;
-            FirstnameBox.Text = employee.Firstname;
-            jobBox.Text = employee.Job;
-            SiteBox.Text = employee.Place;
-            PhoneBox.Text = employee.PhoneNumber;
-            MailBox.Text = employee.Mail;
-        }
-
-        #endregion
-
-        #region Messages Methods
-        private void ShowErrorMessage(string message) { MessageBox.Show(message, "Erreur", MessageBoxButton.OK, MessageBoxImage.Error); }
-        private void ShowSuccessMessage(string message) { MessageBox.Show(message, "Succès", MessageBoxButton.OK, MessageBoxImage.Information); }
-
-        #endregion
-
     }
 }
