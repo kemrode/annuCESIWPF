@@ -70,6 +70,7 @@ C:\Users\2217873\Documents\CESI\cubeAnnuaire\annuaire.WPF\obj\Debug\net5.0-windo
 C:\Users\2217873\Documents\CESI\cubeAnnuaire\annuaire.WPF\obj\Debug\net5.0-windows\annuaire.WPF.AssemblyInfoInputs.cache
 C:\Users\2217873\Documents\CESI\cubeAnnuaire\annuaire.WPF\obj\Debug\net5.0-windows\annuaire.WPF.AssemblyInfo.cs
 C:\Users\2217873\Documents\CESI\cubeAnnuaire\annuaire.WPF\obj\Debug\net5.0-windows\annuaire.WPF.csproj.CoreCompileInputs.cache
+C:\Users\2217873\Documents\CESI\cubeAnnuaire\annuaire.WPF\obj\Debug\net5.0-windows\annuaire.WPF.csproj.CopyComplete
 C:\Users\2217873\Documents\CESI\cubeAnnuaire\annuaire.WPF\obj\Debug\net5.0-windows\annuaire.WPF.dll
 C:\Users\2217873\Documents\CESI\cubeAnnuaire\annuaire.WPF\obj\Debug\net5.0-windows\ref\annuaire.WPF.dll
 C:\Users\2217873\Documents\CESI\cubeAnnuaire\annuaire.WPF\obj\Debug\net5.0-windows\annuaire.WPF.pdb

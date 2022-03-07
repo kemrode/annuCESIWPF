@@ -2170,7 +2170,6 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v5.0",
         "dependencies": {
-          "Microsoft.EntityFrameworkCore": "5.0.14",
           "Microsoft.EntityFrameworkCore.SqlServer": "5.0.13",
           "Swashbuckle.AspNetCore": "5.6.3",
           "annuaire.Core.Employees.Domain": "1.0.0",

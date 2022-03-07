@@ -85,7 +85,7 @@ namespace annuaire.WPF {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/annuaire.WPF;component/loginadmin.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/annuaire.WPF;V1.0.0.0;component/loginadmin.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\LoginAdmin.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

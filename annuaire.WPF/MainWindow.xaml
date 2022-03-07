@@ -35,7 +35,7 @@
             <RowDefinition></RowDefinition>
             <RowDefinition></RowDefinition>
             <RowDefinition></RowDefinition>
-            <RowDefinition></RowDefinition>
+            <RowDefinition Height="45.78"></RowDefinition>
             <RowDefinition></RowDefinition>
             <RowDefinition></RowDefinition>
             <RowDefinition></RowDefinition>
@@ -79,10 +79,10 @@
         <Button x:Name="deleteSiteBtn" Grid.Column="3" Grid.Row="16" Grid.ColumnSpan="2" Content="Supprimer Site" FontSize="24" VerticalContentAlignment="Center" Click="deleteSiteBtn_Click"/>
 
 
-        <Label Content="Nouveau service :" Grid.Column="5" Grid.Row="14" Grid.ColumnSpan="1" FontSize="15" FontWeight="Bold" HorizontalAlignment="Right"/>
+        <Label Content="Nv service :" Grid.Column="5" Grid.Row="14" Grid.ColumnSpan="1" FontSize="15" FontWeight="Bold" HorizontalAlignment="Left"/>
         <TextBox x:Name="newJob" Grid.Column="6" Grid.Row="14" Grid.ColumnSpan="2" VerticalContentAlignment="Center" FontSize="20" FontStyle="Italic"/>
         <Button x:Name="newJobBtn" Grid.Column="8" Grid.Row="14" Grid.ColumnSpan="2" Content="Nouveau Service" FontSize="24" VerticalContentAlignment="Center" Click="newJobBtn_Click"/>
-        <Label Content="Supprimer job :" Grid.Column="5" Grid.Row="16" Grid.ColumnSpan="1" FontSize="13" FontWeight="Bold" HorizontalAlignment="Right"/>
+        <Label Content="Suppr. service :" Grid.Column="5" Grid.Row="16" Grid.ColumnSpan="1" FontSize="13" FontWeight="Bold" HorizontalAlignment="Left"/>
         <ComboBox x:Name="jobDeleting" Grid.Column="6" Grid.Row="16" Grid.ColumnSpan="2" VerticalContentAlignment="Center" FontSize="20" FontStyle="Italic" Background="White"/>
         <Button x:Name="deleteJobBtn" Grid.Column="8" Grid.Row="16" Grid.ColumnSpan="2" Content="Supprimer Service" FontSize="24" VerticalContentAlignment="Center" Click="deleteJobBtn_Click"/>
         
